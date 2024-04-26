@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<project xmlns="http://lime.software/project/1.0.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://lime.software/project/1.0.2 http://lime.software/xsd/project-1.0.2.xsd">
+<project xmlns="http://lime.openfl.org/project/1.0.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://lime.openfl.org/project/1.0.4 http://lime.openfl.org/xsd/project-1.0.4.xsd">
 
 	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="Minesweeper+" file="Minesweeper+" main="Main" version="0.0.1" company="HaxeFlixel" />
+	<app title="Minesweeper+" file="Minesweeper+" packageName="com.intancote.minesweeperplus" package="com.intancote.minesweeperplus" main="Main" version="0.0.1" company="Intancote" />
 
 	<!--The flixel preloader is not accurate in Chrome. You can use it regularly if you embed the swf into a html file
 		or you can set the actual size of your file manually at "FlxPreloaderBase-onUpdate-bytesTotal"-->
@@ -16,10 +16,10 @@
 	<!-- ____________________________ Window Settings ___________________________ -->
 
 	<!--These window settings apply to all targets-->
-	<window width="640" height="480" fps="60" background="#000000" hardware="true" vsync="false" />
+	<window width="960" height="720" fps="60" background="#000000" hardware="true" vsync="false" />
 
 	<!--HTML5-specific-->
-	<window if="html5" resizable="false" />
+	<window if="html5" resizable="true" />
 
 	<!--Desktop-specific-->
 	<window if="desktop" orientation="landscape" fullscreen="false" resizable="true" />
@@ -47,6 +47,9 @@
 	<!--<haxelib name="nape-haxe4" />-->
 
 	<!-- ______________________________ Haxedefines _____________________________ -->
+
+	<!--Remove the legacy health system-->
+	<haxedef name="FLX_NO_HEALTH" />
 
 	<!--Enable the Flixel core recording system-->
 	<!--<haxedef name="FLX_RECORD" />-->
@@ -78,14 +81,28 @@
 	<!--Enable this for Nape release builds for a serious peformance improvement-->
 	<haxedef name="NAPE_RELEASE_BUILD" unless="debug" />
 
+	<!-- Haxe 4.3.0+: Enable pretty syntax errors and stuff. -->
+	<!-- pretty (haxeflixel default), indent, classic (haxe compiler default) -->
+	<haxedef name="message.reporting" value="pretty" />
+
 	<!-- _________________________________ Custom _______________________________ -->
 
 	<!--Place custom nodes like icons here (higher priority to override the HaxeFlixel icon)-->
 
 	<assets path='project-assets/iconOG.png' rename='icon.png' if="linux" /> <!--Linux icon (Currently useless)-->
 
-	<icon path="project-assets/icon16.png" size='16'/>
-	<icon path="project-assets/icon32.png" size='32'/>
-	<icon path="project-assets/icon64.png" size='64'/>
-	<icon path="project-assets/iconOG.png" />
+	<icon path="project-assets/icon/icon8.png"   size='8'  />
+	<icon path="project-assets/icon/icon10.png"  size='10' />
+	<icon path="project-assets/icon/icon14.png"  size='14' />
+	<icon path="project-assets/icon/icon16.png"  size='16' />
+	<icon path="project-assets/icon/icon22.png"  size='22' />
+	<icon path="project-assets/icon/icon24.png"  size='24' />
+	<icon path="project-assets/icon/icon32.png"  size='32' />
+	<icon path="project-assets/icon/icon40.png"  size='40' />
+	<icon path="project-assets/icon/icon48.png"  size='48' />
+	<icon path="project-assets/icon/icon64.png"  size='64' />
+	<icon path="project-assets/icon/icon96.png"  size='96' />
+	<icon path="project-assets/icon/icon128.png" size='128'/>
+	<icon path="project-assets/icon/icon256.png" size='256'/>
+	<icon path="project-assets/icon/iconOG.png" />
 </project>
