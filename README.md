@@ -8,6 +8,6 @@
 
 > [!IMPORTANT]
 > This project is still in development and is not yet ready for general use.
-> Use this oputunity to contribute to the project and be a early contributor.
+> Use this opportunity to contribute to the project and be a early contributor.
 
-A open source version of Minesweeper, but with added featuers (eventually).
+A open source version of Minesweeper, but with added features (eventually).
