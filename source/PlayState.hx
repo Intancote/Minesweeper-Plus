@@ -3,9 +3,47 @@ import flixel.FlxSprite;
 import flixel.FlxState;
 import flixel.graphics.frames.FlxAtlasFrames;
 
+class Tile extends FlxSprite
+{
+	public var isRevealed:Bool = false;
+	public var isMine:Bool = false;
+	public var adjacentMines:Int = 0;
+
+	public function new(x:Float, y:Float)
+	{
+		super(x, y);
+		loadGraphic("assets/images/Tile-Unrevealed.png");
+	}
+
+	public function reveal()
+	{
+		if (!isRevealed)
+		{
+			if (isMine)
+			{
+				loadGraphic("assets/images/Exploded-Tile.png");
+			}
+			else
+			{
+				loadGraphic("assets/images/Tile-Empty.png");
+				// Display the number of adjacent mines
+				// This will depend on how you're displaying text in your game
+			}
+			isRevealed = true;
+		}
+	}
+
+	public function countAdjacentMines()
+	{
+		// Implement this method to count the number of mines adjacent to this tile
+		// This will involve checking the tiles around this one
+	}
+}
+
 class PlayState extends FlxState
 {
-	private var tileURSprite:FlxSprite;
+	// 2D array to store tile references
+	private var tiles:Array<Array<Tile>>;
 
 	override public function create()
 	{
@@ -15,6 +53,17 @@ class PlayState extends FlxState
 		var gridRows:Int = 9;
 		var gridColumns:Int = 9;
 
+		// Initialize the 2D array
+		tiles = new Array<Array<Tile>>();
+		for (i in 0...gridRows)
+		{
+			tiles[i] = new Array<Tile>();
+			for (j in 0...gridColumns)
+			{
+				tiles[i][j] = null;
+			}
+		}
+
 		// Define sprite size
 		var spriteWidth:Int = 64;
 		var spriteHeight:Int = 64;
@@ -23,16 +72,37 @@ class PlayState extends FlxState
 		var startX:Float = (FlxG.width - (gridColumns * spriteWidth)) / 2;
 		var startY:Float = (FlxG.height - (gridRows * spriteHeight)) / 2;
 
-		// Create sprites in a loop
+		// Create sprites in a loop and store references in the 2D array
 		for (i in 0...gridRows)
 		{
 			for (j in 0...gridColumns)
 			{
-				var sprite = new FlxSprite(startX + j * spriteWidth, startY + i * spriteHeight);
-				sprite.loadGraphic("assets/images/Tile-Unrevealed.png");
-				add(sprite);
+				var tile = new Tile(startX + j * spriteWidth, startY + i * spriteHeight);
+				add(tile);
+				tiles[i][j] = tile; // Store the reference in the 2D array
 			}
 		}
+
+		// Randomly place mines
+		var totalMines:Int = 10; // Example number of mines
+		var placedMines:Int = 0;
+		while (placedMines < totalMines)
+		{
+			var randomRow:Int = Math.floor(Math.random() * gridRows);
+			var randomColumn:Int = Math.floor(Math.random() * gridColumns);
+			var tile = getTileAt(randomRow, randomColumn);
+			if (tile != null && !tile.isMine)
+			{
+				tile.isMine = true;
+				placedMines++;
+			}
+		}
+	}
+
+	function getTileAt(row:Int, column:Int):Tile
+	{
+		// Return the tile at the given row and column
+		return tiles[row][column];
 	}
 
 	override public function update(elapsed:Float)
@@ -42,20 +112,21 @@ class PlayState extends FlxState
 		// Check if the mouse is pressed
 		if (FlxG.mouse.justPressed)
 		{
-			// Get the mouse position
-			var mouseX:Float = FlxG.mouse.screenX;
-			var mouseY:Float = FlxG.mouse.screenY;
-
-			// Loop through all the sprites (tiles) in the state
-			for (sprite in members)
+			for (tile in members)
 			{
-				if (FlxG.mouse.overlaps(sprite))
+				if (FlxG.mouse.overlaps(tile))
 				{
-					/* sprite.loadGraphic("assets/images/Tile-Empty.png"); */
-					// Perform an action when a tile is clicked, e.g., reveal the tile
-					// This is a placeholder for your actual logic
-					/* trace("Tile clicked: " + sprite.x + ", " + sprite.y); */
-					// You can add your logic here to reveal the tile or perform other actions
+					if (cast(tile, Tile).isMine)
+					{
+						// End the game
+						cast(tile, Tile).reveal();
+						/* trace("Game Over"); */
+					}
+					else
+					{
+						cast(tile, Tile).reveal();
+					}
+					break;
 				}
 			}
 		}
