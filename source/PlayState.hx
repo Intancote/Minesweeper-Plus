@@ -15,7 +15,7 @@ class Tile extends FlxSprite
 		loadGraphic("assets/images/Tile-Unrevealed.png");
 	}
 
-	public function reveal()
+	public function reveal(mineCountSprites:Array<String>):Void
 	{
 		if (!isRevealed)
 		{
@@ -25,9 +25,15 @@ class Tile extends FlxSprite
 			}
 			else
 			{
-				loadGraphic("assets/images/Tile-Empty.png");
-				// Display the number of adjacent mines
-				// This will depend on how you're displaying text in your game
+				var index = adjacentMines;
+				if (index < mineCountSprites.length)
+				{
+					loadGraphic(mineCountSprites[index]);
+				}
+				else
+				{
+					loadGraphic("assets/images/Tile-Empty.png"); // Fallback for more than 8 mines
+				}
 			}
 			isRevealed = true;
 		}
@@ -42,16 +48,29 @@ class Tile extends FlxSprite
 
 class PlayState extends FlxState
 {
+	private var mineCountSprites:Array<String> = [
+		"assets/images/Tile-Empty.png",
+		"assets/images/Tile-1.png",
+		"assets/images/Tile-2.png",
+		"assets/images/Tile-3.png",
+		"assets/images/Tile-4.png",
+		"assets/images/Tile-5.png",
+		"assets/images/Tile-6.png",
+		"assets/images/Tile-7.png",
+		"assets/images/Tile-8.png"
+	];
+
 	// 2D array to store tile references
 	private var tiles:Array<Array<Tile>>;
+	private var numMines:Int = 0;
+
+	// Define grid size
+	var gridRows:Int = 9;
+	var gridColumns:Int = 9;
 
 	override public function create()
 	{
 		super.create();
-
-		// Define grid size
-		var gridRows:Int = 9;
-		var gridColumns:Int = 9;
 
 		// Initialize the 2D array
 		tiles = new Array<Array<Tile>>();
@@ -83,25 +102,52 @@ class PlayState extends FlxState
 			}
 		}
 
-		// Randomly place mines
-		var totalMines:Int = 10; // Example number of mines
-		var placedMines:Int = 0;
-		while (placedMines < totalMines)
+		// Call placeMines after initializing the grid
+		placeMines(10); // Adjust the number of mines as needed
+	}
+
+	private function placeMines(Mines:Int):Void
+	{
+		var x:Int = 0;
+		var y:Int = 0;
+
+		for (m in 0...Mines)
 		{
-			var randomRow:Int = Math.floor(Math.random() * gridRows);
-			var randomColumn:Int = Math.floor(Math.random() * gridColumns);
-			var tile = getTileAt(randomRow, randomColumn);
+			x = Math.floor(Math.random() * gridColumns);
+			y = Math.floor(Math.random() * gridRows);
+
+			if (tiles[y][x].isMine)
+				continue; // Ensure the tile is not already marked as a mine
+
+			tiles[y][x].isMine = true;
+			numMines++;
+
+			// Generate numbers for surrounding tiles
+			generateNumber(x - 1, y);
+			generateNumber(x + 1, y);
+			generateNumber(x, y - 1);
+			generateNumber(x, y + 1);
+			generateNumber(x + 1, y + 1);
+			generateNumber(x - 1, y + 1);
+			generateNumber(x - 1, y - 1);
+			generateNumber(x + 1, y - 1);
+		}
+	}
+
+	private function generateNumber(TileX:Int, TileY:Int):Void
+	{
+		if (TileX >= 0 && TileX < gridColumns && TileY >= 0 && TileY < gridRows)
+		{
+			var tile = getTileAt(TileY, TileX);
 			if (tile != null && !tile.isMine)
 			{
-				tile.isMine = true;
-				placedMines++;
+				tile.adjacentMines++;
 			}
 		}
 	}
 
 	function getTileAt(row:Int, column:Int):Tile
 	{
-		// Return the tile at the given row and column
 		return tiles[row][column];
 	}
 
@@ -119,12 +165,12 @@ class PlayState extends FlxState
 					if (cast(tile, Tile).isMine)
 					{
 						// End the game
-						cast(tile, Tile).reveal();
+						cast(tile, Tile).reveal(mineCountSprites);
 						/* trace("Game Over"); */
 					}
 					else
 					{
-						cast(tile, Tile).reveal();
+						cast(tile, Tile).reveal(mineCountSprites);
 					}
 					break;
 				}
