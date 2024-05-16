@@ -2,6 +2,9 @@ import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
 
+var totalMines:Int = 10; // Example value, adjusting later
+var totalFlagsPlaced:Int = 0;
+
 class Tile extends FlxSprite
 {
 	public var isRevealed:Bool = false;
@@ -23,14 +26,19 @@ class Tile extends FlxSprite
 		// Only allow flagging if the tile is not already revealed
 		if (!isRevealed)
 		{
-			isFlagged = !isFlagged;
 			if (isFlagged)
 			{
-				loadGraphic("assets/images/Tile-Holding.png"); // TODO: Change placeholder sprite to flag sprite
-			}
-			else
-			{
+				// Removing a flag
+				isFlagged = false;
 				loadGraphic("assets/images/Tile-Unrevealed.png");
+				totalFlagsPlaced--; // Decrement the total flags placed
+			}
+			else if (totalFlagsPlaced < totalMines)
+			{
+				// Placing a flag
+				isFlagged = true;
+				loadGraphic("assets/images/Tile-Holding.png"); // TODO: Change placeholder sprite to flag sprite
+				totalFlagsPlaced++; // Increment the total flags placed
 			}
 		}
 	}
@@ -39,6 +47,13 @@ class Tile extends FlxSprite
 	{
 		if (!isRevealed)
 		{
+			isRevealed = true;
+			if (isFlagged)
+			{
+				// If the tile was flagged, decrement the total flags placed
+				totalFlagsPlaced--;
+			}
+
 			if (isMine)
 			{
 				loadGraphic("assets/images/Exploded-Tile.png");
@@ -55,7 +70,6 @@ class Tile extends FlxSprite
 					loadGraphic("assets/images/Tile-Empty.png"); // Fallback for more than 8 mines (Shouldn't be possible)
 				}
 			}
-			isRevealed = true;
 		}
 	}
 }
