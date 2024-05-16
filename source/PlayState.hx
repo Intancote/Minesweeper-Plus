@@ -1,7 +1,6 @@
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
-import flixel.graphics.frames.FlxAtlasFrames;
 
 class Tile extends FlxSprite
 {
@@ -9,10 +8,31 @@ class Tile extends FlxSprite
 	public var isMine:Bool = false;
 	public var adjacentMines:Int = 0;
 
+	public var isFlagged:Bool = false;
+
 	public function new(x:Float, y:Float)
 	{
 		super(x, y);
 		loadGraphic("assets/images/Tile-Unrevealed.png");
+	}
+
+	public function toggleFlag():Void
+	{
+		// NOTE: Might add ? tiles to the game later for suspected mine tiles
+
+		// Only allow flagging if the tile is not already revealed
+		if (!isRevealed)
+		{
+			isFlagged = !isFlagged;
+			if (isFlagged)
+			{
+				loadGraphic("assets/images/Tile-Holding.png"); // TODO: Change placeholder sprite to flag sprite
+			}
+			else
+			{
+				loadGraphic("assets/images/Tile-Unrevealed.png");
+			}
+		}
 	}
 
 	public function reveal(mineCountSprites:Array<String>):Void
@@ -32,17 +52,11 @@ class Tile extends FlxSprite
 				}
 				else
 				{
-					loadGraphic("assets/images/Tile-Empty.png"); // Fallback for more than 8 mines
+					loadGraphic("assets/images/Tile-Empty.png"); // Fallback for more than 8 mines (Shouldn't be possible)
 				}
 			}
 			isRevealed = true;
 		}
-	}
-
-	public function countAdjacentMines()
-	{
-		// Implement this method to count the number of mines adjacent to this tile
-		// This will involve checking the tiles around this one
 	}
 }
 
@@ -122,15 +136,16 @@ class PlayState extends FlxState
 			tiles[y][x].isMine = true;
 			numMines++;
 
-			// Generate numbers for surrounding tiles
-			generateNumber(x - 1, y);
-			generateNumber(x + 1, y);
-			generateNumber(x, y - 1);
-			generateNumber(x, y + 1);
-			generateNumber(x + 1, y + 1);
-			generateNumber(x - 1, y + 1);
-			generateNumber(x - 1, y - 1);
-			generateNumber(x + 1, y - 1);
+			// Generate numbers for surrounding tiles using a loop
+			for (i in -1...2)
+			{
+				for (j in -1...2)
+				{
+					if (i == 0 && j == 0)
+						continue;
+					generateNumber(x + i, y + j);
+				}
+			}
 		}
 	}
 
@@ -172,6 +187,17 @@ class PlayState extends FlxState
 					{
 						cast(tile, Tile).reveal(mineCountSprites);
 					}
+					break;
+				}
+			}
+		}
+		if (FlxG.mouse.justPressedRight)
+		{
+			for (tile in members)
+			{
+				if (FlxG.mouse.overlaps(tile))
+				{
+					cast(tile, Tile).toggleFlag();
 					break;
 				}
 			}
