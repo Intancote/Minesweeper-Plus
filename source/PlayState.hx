@@ -1,6 +1,9 @@
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxState;
+import flixel.text.FlxText;
+import flixel.util.FlxColor;
+import flixel.util.FlxTimer;
 
 var totalMines:Int = 10; // Example value, adjusting later
 var totalFlagsPlaced:Int = 0;
@@ -76,6 +79,9 @@ class Tile extends FlxSprite
 
 class PlayState extends FlxState
 {
+	public var time:Int;
+	public var timeText:FlxText;
+
 	private var mineCountSprites:Array<String> = [
 		"assets/images/Tile-Empty.png",
 		"assets/images/Tile-1.png",
@@ -99,6 +105,13 @@ class PlayState extends FlxState
 	override public function create()
 	{
 		super.create();
+
+		time = 0;
+
+		// Time text
+		timeText = new FlxText(0, 0, FlxG.width, Std.int(time / 60) + ":" + StringTools.lpad(Std.string(time % 60), "0", 2), 20);
+		timeText.setFormat(null, 20, FlxColor.WHITE, "center");
+		add(timeText);
 
 		// Initialize the 2D array
 		tiles = new Array<Array<Tile>>();
@@ -184,6 +197,12 @@ class PlayState extends FlxState
 	{
 		super.update(elapsed);
 
+		// Increment the time based on the elapsed time
+		time += 1;
+
+		// Update the time display
+		updateTimeDisplay();
+
 		// Check if the mouse is pressed
 		if (FlxG.mouse.justPressed)
 		{
@@ -216,5 +235,14 @@ class PlayState extends FlxState
 				}
 			}
 		}
+	}
+
+	private function updateTimeDisplay():Void
+	{
+		// Calculate seconds
+		var seconds:Int = Math.floor(time / 60);
+
+		// Format the time display
+		timeText.text = Std.string(seconds);
 	}
 }
