@@ -169,7 +169,23 @@ class PlayState extends FlxState
 		add(gameTextLose);
 
 		// Call placeMines after initializing the grid
-		placeMines(10); // Adjust the number of mines as needed
+		placeMines(totalMines); // Adjust the number of mines as needed
+	}
+
+	private function countRevealedNonMineTiles():Int
+	{
+		var count = 0;
+		for (row in tiles)
+		{
+			for (tile in row)
+			{
+				if (!tile.isMine && tile.isRevealed)
+				{
+					count++;
+				}
+			}
+		}
+		return count;
 	}
 
 	private function placeMines(Mines:Int):Void
@@ -222,7 +238,7 @@ class PlayState extends FlxState
 	{
 		super.update(elapsed);
 
-		// Show all mines if the player loses
+		// Show all mines if the player loses or wins
 		if (lose == true)
 		{
 			// Reveal all mines
@@ -238,46 +254,69 @@ class PlayState extends FlxState
 			}
 		}
 
-		// Increment the time if the player has not lost
-		if (lose == false)
-		{
-			time += 1;
-		}
-
 		// Update the time display
 		updateTimeDisplay();
+
+		// Check if the game is won
+		if (countRevealedNonMineTiles() == (gridRows * gridColumns) - numMines)
+		{
+			// Assuming all non-mine tiles are revealed
+			win = true;
+			gameTextWin.visible = true;
+
+			// Fake lose condition to reveal mines as not exploded
+			lose = true;
+
+			// Reveal all mines
+			for (row in tiles)
+			{
+				for (tile in row)
+				{
+					if (tile.isMine)
+					{
+						tile.reveal(mineCountSprites);
+					}
+				}
+			}
+		}
 
 		// Check if the mouse is pressed
 		if (lose == false)
 		{
-			if (FlxG.mouse.justPressed)
+			if (win == false)
 			{
-				for (tile in members)
+				// Increment the time if the player has not lost
+				time += 1;
+
+				if (FlxG.mouse.justReleased)
 				{
-					if (FlxG.mouse.overlaps(tile))
+					for (tile in members)
 					{
-						if (cast(tile, Tile).isMine)
+						if (FlxG.mouse.overlaps(tile))
 						{
-							// End the game
-							gameTextLose.visible = true;
-							cast(tile, Tile).reveal(mineCountSprites);
+							if (cast(tile, Tile).isMine)
+							{
+								// End the game
+								gameTextLose.visible = true;
+								cast(tile, Tile).reveal(mineCountSprites);
+							}
+							else
+							{
+								cast(tile, Tile).reveal(mineCountSprites);
+							}
+							break;
 						}
-						else
-						{
-							cast(tile, Tile).reveal(mineCountSprites);
-						}
-						break;
 					}
 				}
-			}
-			if (FlxG.mouse.justPressedRight)
-			{
-				for (tile in members)
+				if (FlxG.mouse.justPressedRight)
 				{
-					if (FlxG.mouse.overlaps(tile))
+					for (tile in members)
 					{
-						cast(tile, Tile).toggleFlag();
-						break;
+						if (FlxG.mouse.overlaps(tile))
+						{
+							cast(tile, Tile).toggleFlag();
+							break;
+						}
 					}
 				}
 			}
