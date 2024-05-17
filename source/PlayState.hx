@@ -7,6 +7,7 @@ import flixel.util.FlxTimer;
 
 var totalMines:Int = 10; // Example value, adjusting later
 var totalFlagsPlaced:Int = 0;
+var lose:Bool = false;
 
 class Tile extends FlxSprite
 {
@@ -60,6 +61,7 @@ class Tile extends FlxSprite
 			if (isMine)
 			{
 				loadGraphic("assets/images/Exploded-Tile.png");
+				lose = true;
 			}
 			else
 			{
@@ -81,6 +83,8 @@ class PlayState extends FlxState
 {
 	public var time:Int;
 	public var timeText:FlxText;
+	public var gameTextWin:FlxText;
+	public var gameTextLose:FlxText;
 
 	private var mineCountSprites:Array<String> = [
 		"assets/images/Tile-Empty.png",
@@ -109,7 +113,7 @@ class PlayState extends FlxState
 		time = 0;
 
 		// Time text
-		timeText = new FlxText(0, 0, FlxG.width, Std.int(time / 60) + ":" + StringTools.lpad(Std.string(time % 60), "0", 2), 20);
+		timeText = new FlxText(0, 0, FlxG.width, Std.string(time));
 		timeText.setFormat(null, 20, FlxColor.WHITE, "center");
 		add(timeText);
 
@@ -142,6 +146,18 @@ class PlayState extends FlxState
 				tiles[i][j] = tile; // Store the reference in the 2D array
 			}
 		}
+
+		// Game win text
+		gameTextWin = new FlxText(0, 0, FlxG.width, "You Win!");
+		gameTextWin.setFormat(null, 20, FlxColor.WHITE, "center", OUTLINE_FAST, FlxColor.BLACK);
+		gameTextWin.visible = false;
+		add(gameTextWin);
+
+		// Game lose text
+		gameTextLose = new FlxText(0, 360, FlxG.width, "You Lose!");
+		gameTextLose.setFormat(null, 20, FlxColor.WHITE, "center", OUTLINE_FAST, FlxColor.BLACK);
+		gameTextLose.visible = false;
+		add(gameTextLose);
 
 		// Call placeMines after initializing the grid
 		placeMines(10); // Adjust the number of mines as needed
@@ -204,34 +220,37 @@ class PlayState extends FlxState
 		updateTimeDisplay();
 
 		// Check if the mouse is pressed
-		if (FlxG.mouse.justPressed)
+		if (lose == false)
 		{
-			for (tile in members)
+			if (FlxG.mouse.justPressed)
 			{
-				if (FlxG.mouse.overlaps(tile))
+				for (tile in members)
 				{
-					if (cast(tile, Tile).isMine)
+					if (FlxG.mouse.overlaps(tile))
 					{
-						// End the game
-						cast(tile, Tile).reveal(mineCountSprites);
-						/* trace("Game Over"); */
+						if (cast(tile, Tile).isMine)
+						{
+							// End the game
+							gameTextLose.visible = true;
+							cast(tile, Tile).reveal(mineCountSprites);
+						}
+						else
+						{
+							cast(tile, Tile).reveal(mineCountSprites);
+						}
+						break;
 					}
-					else
-					{
-						cast(tile, Tile).reveal(mineCountSprites);
-					}
-					break;
 				}
 			}
-		}
-		if (FlxG.mouse.justPressedRight)
-		{
-			for (tile in members)
+			if (FlxG.mouse.justPressedRight)
 			{
-				if (FlxG.mouse.overlaps(tile))
+				for (tile in members)
 				{
-					cast(tile, Tile).toggleFlag();
-					break;
+					if (FlxG.mouse.overlaps(tile))
+					{
+						cast(tile, Tile).toggleFlag();
+						break;
+					}
 				}
 			}
 		}
@@ -243,6 +262,6 @@ class PlayState extends FlxState
 		var seconds:Int = Math.floor(time / 60);
 
 		// Format the time display
-		timeText.text = Std.string(seconds);
+		timeText.text = "Time: " + Std.string(seconds);
 	}
 }
