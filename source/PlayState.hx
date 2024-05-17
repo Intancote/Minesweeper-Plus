@@ -8,11 +8,13 @@ import flixel.util.FlxTimer;
 var totalMines:Int = 10; // Example value, adjusting later
 var totalFlagsPlaced:Int = 0;
 var lose:Bool = false;
+var win:Bool = false;
 
 class Tile extends FlxSprite
 {
 	public var isRevealed:Bool = false;
 	public var isMine:Bool = false;
+	public var isEmpty:Bool = false;
 	public var adjacentMines:Int = 0;
 
 	public var isFlagged:Bool = false;
@@ -60,8 +62,15 @@ class Tile extends FlxSprite
 
 			if (isMine)
 			{
-				loadGraphic("assets/images/Exploded-Tile.png");
-				lose = true;
+				if (lose == false)
+				{
+					loadGraphic("assets/images/Exploded-Tile.png");
+					lose = true;
+				}
+				else
+				{
+					loadGraphic("assets/images/Tile-Mine.png");
+				}
 			}
 			else
 			{
@@ -148,14 +157,14 @@ class PlayState extends FlxState
 		}
 
 		// Game win text
-		gameTextWin = new FlxText(0, 0, FlxG.width, "You Win!");
-		gameTextWin.setFormat(null, 20, FlxColor.WHITE, "center", OUTLINE_FAST, FlxColor.BLACK);
+		gameTextWin = new FlxText(0, 320, FlxG.width, "You Win!");
+		gameTextWin.setFormat(null, 80, FlxColor.WHITE, "center", OUTLINE_FAST, FlxColor.BLACK);
 		gameTextWin.visible = false;
 		add(gameTextWin);
 
 		// Game lose text
-		gameTextLose = new FlxText(0, 360, FlxG.width, "You Lose!");
-		gameTextLose.setFormat(null, 20, FlxColor.WHITE, "center", OUTLINE_FAST, FlxColor.BLACK);
+		gameTextLose = new FlxText(0, 320, FlxG.width, "You Lose!");
+		gameTextLose.setFormat(null, 80, FlxColor.WHITE, "center", OUTLINE_FAST, FlxColor.BLACK);
 		gameTextLose.visible = false;
 		add(gameTextLose);
 
@@ -213,8 +222,27 @@ class PlayState extends FlxState
 	{
 		super.update(elapsed);
 
-		// Increment the time based on the elapsed time
-		time += 1;
+		// Show all mines if the player loses
+		if (lose == true)
+		{
+			// Reveal all mines
+			for (row in tiles)
+			{
+				for (tile in row)
+				{
+					if (tile.isMine)
+					{
+						tile.reveal(mineCountSprites);
+					}
+				}
+			}
+		}
+
+		// Increment the time if the player has not lost
+		if (lose == false)
+		{
+			time += 1;
+		}
 
 		// Update the time display
 		updateTimeDisplay();
