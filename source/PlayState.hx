@@ -5,26 +5,44 @@ import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.util.FlxTimer;
 
-var totalMines:Int = 10; // Example value, adjusting later
+// SECTION - Global Variables
+var totalMines:Int = 10; // NOTE - Change this value to whatever difficulty is selected (Currently no difficulty selection implemented)
 var totalFlagsPlaced:Int = 0;
 var lose:Bool = false;
 var win:Bool = false;
 
+// !SECTION
+// SECTION - Known BUGS
+/*
+	1. When you win or lose. When revealing the mines,
+	the game will change the number of flags placed to the total number of mines again
+	(unless the flag is not on a mine, in which case it will decrement the total flags placed).
+	This is a bug because the total flags placed should not change when the game is over.
+
+	2. Clicking on any of the texts in the game will cause the game to freeze/crash.
+
+	If any more bugs are found, they will be added here.
+ */
+// !SECTION
 class Tile extends FlxSprite
 {
+	// Reveal state
 	public var isRevealed:Bool = false;
 	public var isMine:Bool = false;
 	public var isEmpty:Bool = false;
 	public var adjacentMines:Int = 0;
 
+	// Flagging
 	public var isFlagged:Bool = false;
 
+	// Initialize the tile sprite
 	public function new(x:Float, y:Float)
 	{
 		super(x, y);
 		loadGraphic("assets/images/Tile-Unrevealed.png");
 	}
 
+	// Toggle the flag on the tile
 	public function toggleFlag():Void
 	{
 		// NOTE: Might add ? tiles to the game later for suspected mine tiles
@@ -49,6 +67,7 @@ class Tile extends FlxSprite
 		}
 	}
 
+	// Reveal the tile
 	public function reveal(mineCountSprites:Array<String>):Void
 	{
 		if (!isRevealed)
@@ -62,6 +81,9 @@ class Tile extends FlxSprite
 
 			if (isMine)
 			{
+				// If the tile is a mine, show the mine with or without the explosion
+
+				// If the game is lost, show the mine with the explosion
 				if (lose == false)
 				{
 					loadGraphic("assets/images/Tile-Exploded.png");
@@ -69,12 +91,22 @@ class Tile extends FlxSprite
 				}
 				else
 				{
-					loadGraphic("assets/images/Tile-Mine.png");
+					// If the game is already lost (or fake lost), show the other mines without the explosion
+					if (isFlagged)
+					{
+						loadGraphic("assets/images/Tile-Flagged.png");
+					}
+					else
+					{
+						loadGraphic("assets/images/Tile-Mine.png");
+					}
 				}
 			}
 			else
 			{
 				var index = adjacentMines;
+
+				// If the tile is not a mine, show the number of adjacent mines (if any)
 				if (index < mineCountSprites.length)
 				{
 					loadGraphic(mineCountSprites[index]);
@@ -90,11 +122,14 @@ class Tile extends FlxSprite
 
 class PlayState extends FlxState
 {
+	// Time, flag count, and game condition text
 	public var time:Int;
 	public var timeText:FlxText;
+	public var flagCounter:FlxText;
 	public var gameTextWin:FlxText;
 	public var gameTextLose:FlxText;
 
+	// Array of mine count sprites
 	private var mineCountSprites:Array<String> = [
 		"assets/images/Tile-Empty.png",
 		"assets/images/Tile-1.png",
@@ -115,14 +150,20 @@ class PlayState extends FlxState
 	var gridRows:Int = 9;
 	var gridColumns:Int = 9;
 
+	// Initialize the game state
 	override public function create()
 	{
+		#if web
+		FlxG.stage.showDefaultContextMenu = false; // Disable the right-click menu
+		#end
+
 		super.create();
 
+		// Initialize the time
 		time = 0;
 
 		// Time text
-		timeText = new FlxText(0, 0, FlxG.width, Std.string(time));
+		timeText = new FlxText(0, 0, FlxG.width);
 		timeText.setFormat(null, 20, FlxColor.WHITE, "center");
 		add(timeText);
 
@@ -156,6 +197,11 @@ class PlayState extends FlxState
 			}
 		}
 
+		// Flag count text
+		flagCounter = new FlxText(0, 0, FlxG.width);
+		flagCounter.setFormat(null, 30, FlxColor.RED, "left", SHADOW, FlxColor.WHITE);
+		add(flagCounter);
+
 		// Game win text
 		gameTextWin = new FlxText(0, 320, FlxG.width, "You Win!");
 		gameTextWin.setFormat(null, 80, FlxColor.WHITE, "center", OUTLINE_FAST, FlxColor.BLACK);
@@ -169,38 +215,43 @@ class PlayState extends FlxState
 		add(gameTextLose);
 
 		// Call placeMines after initializing the grid
-		placeMines(totalMines); // Adjust the number of mines as needed
+		placeMines(totalMines);
 	}
 
+	// Count the number of revealed non-mine tiles
 	private function countRevealedNonMineTiles():Int
 	{
 		var count = 0;
-		for (row in tiles)
+		for (row in tiles) // Loop through all rows
 		{
-			for (tile in row)
+			for (tile in row) // Loop through all tiles
 			{
-				if (!tile.isMine && tile.isRevealed)
+				if (!tile.isMine && tile.isRevealed) // Check if the tile is not a mine and is revealed
 				{
-					count++;
+					count++; // Increment the count
 				}
 			}
 		}
 		return count;
 	}
 
+	// Place mines randomly on the grid
 	private function placeMines(Mines:Int):Void
 	{
 		var x:Int = 0;
 		var y:Int = 0;
 
-		for (m in 0...Mines)
+		for (m in 0...Mines) // Loop through the number of mines (does it though???)
 		{
+			// Generate random coordinates
 			x = Math.floor(Math.random() * gridColumns);
 			y = Math.floor(Math.random() * gridRows);
 
+			// Ensure the tile is not already marked as a mine
 			if (tiles[y][x].isMine)
-				continue; // Ensure the tile is not already marked as a mine
+				continue;
 
+			// Mark the tile as a mine
 			tiles[y][x].isMine = true;
 			numMines++;
 
@@ -217,11 +268,16 @@ class PlayState extends FlxState
 		}
 	}
 
+	// Generate a number for a tile
 	private function generateNumber(TileX:Int, TileY:Int):Void
 	{
+		// Check if the tile is within the grid
 		if (TileX >= 0 && TileX < gridColumns && TileY >= 0 && TileY < gridRows)
 		{
+			// Get the tile reference
 			var tile = getTileAt(TileY, TileX);
+
+			// Increment the adjacent mines count if the tile is not a mine
 			if (tile != null && !tile.isMine)
 			{
 				tile.adjacentMines++;
@@ -229,11 +285,13 @@ class PlayState extends FlxState
 		}
 	}
 
+	// Get a tile at a specific row and column
 	function getTileAt(row:Int, column:Int):Tile
 	{
 		return tiles[row][column];
 	}
 
+	// Update the game state
 	override public function update(elapsed:Float)
 	{
 		super.update(elapsed);
@@ -254,8 +312,9 @@ class PlayState extends FlxState
 			}
 		}
 
-		// Update the time display
+		// Update the time and flag count displays continuously
 		updateTimeDisplay();
+		updateFlagCountDisplay();
 
 		// Check if the game is won
 		if (countRevealedNonMineTiles() == (gridRows * gridColumns) - numMines)
@@ -264,7 +323,7 @@ class PlayState extends FlxState
 			win = true;
 			gameTextWin.visible = true;
 
-			// Fake lose condition to reveal mines as not exploded
+			// Enable a fake lose condition to reveal mines as not exploded (Won't show lose text)
 			lose = true;
 
 			// Reveal all mines
@@ -285,9 +344,9 @@ class PlayState extends FlxState
 		{
 			if (win == false)
 			{
-				// Increment the time if the player has not lost
-				time += 1;
+				time += 1; // Increment the time if the player has not lost or won
 
+				// Check if the left mouse button is pressed
 				if (FlxG.mouse.justReleased)
 				{
 					for (tile in members)
@@ -308,6 +367,8 @@ class PlayState extends FlxState
 						}
 					}
 				}
+
+				// Check if the right mouse button is pressed
 				if (FlxG.mouse.justPressedRight)
 				{
 					for (tile in members)
@@ -323,6 +384,17 @@ class PlayState extends FlxState
 		}
 	}
 
+	// Update the flag count display
+	private function updateFlagCountDisplay():Void
+	{
+		// Calculate the number of flags left
+		var flagCount:Int = Math.floor(totalMines - totalFlagsPlaced);
+
+		// Format the flag count display
+		flagCounter.text = "Flags Left: " + Std.string(flagCount);
+	}
+
+	// Update the time display
 	private function updateTimeDisplay():Void
 	{
 		// Calculate seconds
