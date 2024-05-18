@@ -43,7 +43,7 @@ class Tile extends FlxSprite
 			{
 				// Placing a flag
 				isFlagged = true;
-				loadGraphic("assets/images/Tile-Holding.png"); // TODO: Change placeholder sprite to flag sprite
+				loadGraphic("assets/images/Tile-Flagged.png");
 				totalFlagsPlaced++; // Increment the total flags placed
 			}
 		}
@@ -64,7 +64,7 @@ class Tile extends FlxSprite
 			{
 				if (lose == false)
 				{
-					loadGraphic("assets/images/Exploded-Tile.png");
+					loadGraphic("assets/images/Tile-Exploded.png");
 					lose = true;
 				}
 				else
