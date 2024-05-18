@@ -244,7 +244,7 @@ class PlayState extends FlxState
 		var x:Int = 0;
 		var y:Int = 0;
 
-		for (m in 0...Mines) // Loop through the number of mines (does it though???)
+		for (m in 0...Mines) // Loop through the number of mines (but Mines isn't even used in the loop??? (or even defined anywhere in the code???))
 		{
 			// Generate random coordinates
 			x = Math.floor(Math.random() * gridColumns);
