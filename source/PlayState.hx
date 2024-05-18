@@ -21,6 +21,9 @@ var win:Bool = false;
 
 	2. Clicking on any of the texts in the game will cause the game to freeze/crash.
 
+	3. On some very few occations, the amount of mines placed isn't the same as the total number of mines set in the code.
+	I literally have no idea why this is happening. I've tried to debug it but I can't find the issue.
+
 	If any more bugs are found, they will be added here.
  */
 // !SECTION
