@@ -27,7 +27,7 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Install Haxelib
         run: |
-          haxelib setup C:/haxelib
+          haxelib setup ~/haxelib
           haxelib install lime
           haxelib install openfl
           haxelib install flixel
@@ -36,7 +36,7 @@ jobs:
           haxelib install flixel-tools
           haxelib list
       - name: Compile
-        run: lime build linux
+        run: haxelib run lime build linux
       - name: Publish Artifact
         uses: actions/upload-artifact@v4.3.3
         with:
@@ -64,7 +64,7 @@ jobs:
           haxelib list
         shell: cmd
       - name: Compile
-        run: lime build html5
+        run: haxelib run lime build html5
       - name: Publish Artifact
         uses: actions/upload-artifact@v4.3.3
         with:
