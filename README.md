@@ -54,13 +54,15 @@ haxelib run flixel-tools setup
 3. Clone the repository and navigate to the project directory and open a terminal. Then run the following command:
 
 ```bash
-# Currently you can only run the HTML5 build (from my knowledge)
+# Currently you can only run the Linux and HTML5 build (from my knowledge)
 
 # Run this command to build the project and run it in your browser
-lime test html5
+lime test <platform>
 
 # Run this command to only build the project but not run it
-lime build html5
+lime build <platform>
 ```
+
+`<platform>` gets replaced with `linux`, or `html5`
 
 (You should go to "./export/target/bin" after building, so you can check out the README.txt for more info)
