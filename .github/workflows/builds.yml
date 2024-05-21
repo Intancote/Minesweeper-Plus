@@ -62,7 +62,6 @@ jobs:
           haxelib run lime setup
           haxelib install flixel-tools
           haxelib list
-        shell: cmd
       - name: Compile
         run: haxelib run lime build html5
       - name: Publish Artifact
